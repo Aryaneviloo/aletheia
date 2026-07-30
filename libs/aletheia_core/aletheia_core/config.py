@@ -18,14 +18,14 @@ Usage
     settings = get_settings()
     engine = create_engine(str(settings.database_url))
 """
-
+from pathlib import Path
 from functools import lru_cache
 from typing import Literal
 
 from pydantic import Field, PostgresDsn, RedisDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
+_ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
 class Settings(BaseSettings):
     """
     Single source of truth for runtime configuration.
@@ -89,7 +89,7 @@ class Settings(BaseSettings):
     cors_allow_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILE,
         env_file_encoding="utf-8",
         extra="ignore",          # unrelated env vars (e.g. POSTGRES_USER, used only by the db image) don't break parsing
         case_sensitive=False,
