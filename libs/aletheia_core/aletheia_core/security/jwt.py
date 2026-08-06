@@ -8,8 +8,6 @@ if one leaks the exposure window is small by design and it self expires
 
 Refresh tokens are long lived but used only to mint a new access token;
 their HASH is stored in the RefreshToken table
-
-
 Usage
 -----
     from aletheia_core.security.jwt import create_access_token, decode_token
