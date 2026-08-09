@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 from aletheia_core.db.models import DocumentStatus
 
 
-class DocumentIngesionRequest(BaseModel):
+class DocumentIngestRequest(BaseModel):
     """
     Request body for ingestion of a new document
     """
@@ -39,11 +39,10 @@ class DocumentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class IngestionResponse(BaseModel):
+class IngestResponse(BaseModel):
     """
     Returned immediately when an ingestion request is accepted
     """
     job_id : uuid.UUID
     document_id: uuid.UUID
     status: Literal["accepted"] = "accepted"
-    
