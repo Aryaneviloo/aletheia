@@ -44,6 +44,7 @@ class LLMProvider(abc.ABC):
         """
         ...
 
+
     @abc.abstractmethod
     async def stream(
         self,
