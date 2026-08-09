@@ -95,6 +95,11 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
+    # --- LLM provider selection ------------------------------------------
+    llm_provider: Literal["ollama", "groq"] = Field(default="ollama")
+    groq_api_key: str | None = Field(default=None)
+    groq_model: str = Field(default="llama-3.1-8b-instant")
+
 
     @field_validator("jwt_secret_key")
     @classmethod
