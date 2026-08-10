@@ -1,9 +1,3 @@
-#services/inference-service/project.toml
-#
-#The inference service owns all heavy ML dependencies-
-# embedder, reranker and LLM Clients
-# whichever service wants to Ollama/Groq uses this service
-
 [project]
 name = "inference-service"
 version = "0.1.0"
@@ -13,14 +7,17 @@ dependencies = [
     "aletheia-core",
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
-    "sentence-transformers>=3.3.0",  # BGE embedder + cross-encoder reranker
-    "torch>=2.5.0",                  # sentence-transformers dependency — CPU by default
-    "httpx>=0.27.0",                 # async HTTP client for Ollama + Groq
-    "groq>=0.13.0",                  # Groq's official Python SDK
+    "sentence-transformers>=3.3.0",
+    "torch>=2.5.0",
+    "httpx>=0.27.0",
+    "groq>=0.13.0",
 ]
 
 [tool.uv.sources]
 aletheia-core = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
 
 [build-system]
 requires = ["hatchling"]
