@@ -1,0 +1,30 @@
+#services/api-gateway/pyproject.toml
+
+#
+# The API gateway the service that faces the outside world
+# Handles HTTP, JWT auth, request validation and dispatches
+
+
+[project]
+name = "api-gateway"
+version = "0.1.0"
+description = "FastAPi HTTP gatway for the Aletheia swarm"
+requires-python = ">=3.12"
+dependencies = [
+    "aletheia-core",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+    "httpx>=0.27.0",
+]
+
+[tool.uv.sources]
+aletheia-core = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[build-backend]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
