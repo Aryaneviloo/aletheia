@@ -14,6 +14,7 @@ Liveness and readiness endpoints
 A process can be live not yet ready 
 """
 
+
 from __future__ import annotations
 
 import httpx
@@ -31,41 +32,44 @@ log = get_logger(__name__)
 
 @router.get("/live")
 async def liveness():
+    """Process is running. Always returns 200 if this code executes."""
     return {"status": "ok"}
+
 
 @router.get("/ready")
 async def readiness():
-    """Check all the critical dependencies"""
-
+    """
+    Check all critical dependencies. Returns 200 only if everything
+    needed to serve real traffic is actually reachable.
+    """
     settings = get_settings()
     checks: dict[str, bool] = {}
 
-    #Postgres
+    # Postgres
     try:
         db = SessionLocal()
         db.execute(text("SELECT 1"))
         db.close()
         checks["postgres"] = True
     except Exception as e:
-        log.warnign("readiness_postgres_failed", error=str(e))
+        log.warning("readiness_postgres_failed", error=str(e))
         checks["postgres"] = False
 
-    #inference-service
+    # inference-service
     try:
         async with httpx.AsyncClient(timeout=3.0) as client:
-            resp = await client.get(f"{settings.inference_service_ur}/health")
-            checks['inference_service'] = resp.status_code == 200
-
+            resp = await client.get(f"{settings.inference_service_url}/health")
+            checks["inference_service"] = resp.status_code == 200
     except Exception as e:
         log.warning("readiness_inference_failed", error=str(e))
         checks["inference_service"] = False
+
     all_ok = all(checks.values())
     status_code = 200 if all_ok else 503
 
     return JSONResponse(
         status_code=status_code,
-        content = {"status": "ok" if all_ok else "degraded", "checks": checks},
+        content={"status": "ok" if all_ok else "degraded", "checks": checks},
     )
-
 
 
