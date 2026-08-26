@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 
 from aletheia_core.db.base import get_db
 from aletheia_core.db.models import RefreshToken, User
-from aletheia_core.exceptions import AuthenticationError, ConcflictError
+from aletheia_core.exceptions import AuthenticationError, ConflictError
 
 from aletheia_core.schemas.auth import (
     LoginRequest,

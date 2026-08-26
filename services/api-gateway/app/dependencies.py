@@ -12,7 +12,7 @@ The dependecncy chain for a protected route:
 """
 
 from __future__ import annotations
-
+import uuid as uuid_lib
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -28,50 +28,37 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def get_current_user(
-        token: str = Depends(oauth2_scheme),
-        db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
 ) -> User:
-    """
-    Validate the JWT access token and return the authenticated user
-    
-    Raises Authentication error and Authorization error
-    """
-
     payload = decode_token(token, expected_type="access")
 
-    user_id: str | None = payload.get("sub")
-    if not user_id:
+    user_id_str: str | None = payload.get("sub")
+    if not user_id_str:
         raise AuthenticationError(
-            message="TOken is missing object state",
+            message="Token is missing subject claim.",
             error_code="token_missing_sub",
+        )
+
+    try:
+        user_id = uuid_lib.UUID(user_id_str)
+    except ValueError:
+        raise AuthenticationError(
+            message="Token subject is not a valid UUID.",
+            error_code="token_invalid_sub",
         )
 
     user = db.get(User, user_id)
     if user is None:
         raise AuthenticationError(
-            message="User Not Found",
+            message="User not found.",
             error_code="user_not_found",
         )
 
     if not user.is_active:
         raise AuthorizationError(
-            message="This account has been deactivated",
+            message="This account has been deactivated.",
             error_code="user_inactive",
         )
 
-
-def get_current_superuser(
-        current_user: User = Depends(get_current_user),
-) -> User:
-    """
-    Used for admin only endpoints
-    Builds on get_current_user via Depends() chaining
-    """
-
-    if not current_user.is_superuser:
-        raise AuthorizationError(
-            message="THis action requires superusr privileges",
-            error_code="superuser_required"
-        )
-    return current_user
-
+    return user

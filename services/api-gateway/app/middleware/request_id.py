@@ -27,7 +27,7 @@ from aletheia_core.logging import bind_request_id, clear_context
 
 
 
-class RequestMiddleware(BaseHTTPMiddleware):
+class RequestIDMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         inbound_id = request.headers.get("X-Request-ID")
         request_id = bind_request_id(inbound_id)

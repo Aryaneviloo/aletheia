@@ -60,7 +60,7 @@ class AuthorizationError(AletheiaError):
     Ex: trying to read another user's private collection
     """
 
-class ConcflictError(AletheiaError):
+class ConflictError(AletheiaError):
     """
     Reqeust conflicts with existing ones. Maps to HTTP 409
     Ex: registering with an email that is already taken
