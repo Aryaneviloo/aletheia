@@ -20,9 +20,17 @@ store, Postgres system-of-record) built with a uv workspace monorepo.
 
 ## Status
 
-Currently in Phase 1 of a 12-phase build — shared config, database schema,
-and Alembic migrations. See `docs/architecture.md` for the full design.
+## Status
 
+Phase 8 of 12 — active development.
+
+- ✅ aletheia_core — config, DB models, migrations, security, vector client, Celery
+- ✅ inference-service — BGE embedder (cuda), cross-encoder reranker, Ollama/Groq abstraction  
+- ✅ api-gateway — JWT auth fully verified end-to-end (register → login → /me)
+- 🔄 Remaining gateway routers (collections, ingestion, search, jobs) — next
+- ⬜ ingestion-worker, synthesis-worker, judge-worker
+- ⬜ Tests, Dockerfiles, docker-compose final
+- ⬜ Constellation UI data contracts
 ## License
 
 MIT — see [LICENSE](LICENSE).
