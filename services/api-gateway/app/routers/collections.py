@@ -27,7 +27,7 @@ from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/collections", tags=["collections"])
 
-def _get_owned_collections(
+def _get_owned_collection(
         collection_id: uuid.UUID,
         current_user: User,
         db: Session,
@@ -97,7 +97,7 @@ def get_collection(
     db: Session = Depends(get_db),
     current_user: User  = Depends(get_current_user),
 ) -> Collection:
-    return _get_owned_collections(collection_id, current_user, db)
+    return _get_owned_collection(collection_id, current_user, db)
 
 
 @router.patch("/{collection_id}", response_model=CollectionRead)
@@ -111,7 +111,7 @@ def update_collection(
     Partial update so that the fields explicitly set in the 
     request body are changed.
     """
-    collection = _get_owned_collections(collection_id, current_user, db)
+    collection = _get_owned_collection(collection_id, current_user, db)
 
     
     if payload.name is not None:
@@ -151,6 +151,6 @@ def delete_collection(
     Note: this does NOT clean up Qdrant vectors for the deleted chunks.
     """
 
-    collection = _get_owned_collections(collection_id, current_user, db)
+    collection = _get_owned_collection(collection_id, current_user, db)
     db.delete(collection)
     db.commit()
