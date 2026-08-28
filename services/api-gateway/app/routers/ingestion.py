@@ -75,7 +75,7 @@ def ingest_document(
     if existing:
         raise ConflictError(
             message="This content has already been ingested into the collection.",
-            error_code="docuement_already_exists",
+            error_code="document_already_exists",
         )
 
     #Create the document row immediately
