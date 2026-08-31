@@ -7,7 +7,7 @@ Celery task (ingestion, synthesis, or judge) using the job_id
 
 Polling pattern:
   POST /ingestion        → returns job_id immediately (202 Accepted)
-  GET  /jobs/{job_id}   → poll until status is "completed" or "failed"
+ . GET  /jobs/{job_id}   → poll until status is "completed" or "failed"
 """
 
 from __future__ import annotations

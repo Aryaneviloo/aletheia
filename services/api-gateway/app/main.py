@@ -33,7 +33,12 @@ from aletheia_core.exceptions import (
 )
 from aletheia_core.logging import configure_logging, get_logger
 from app.middleware.request_id import RequestIDMiddleware
-from app.routers import auth, health, collections, ingestion, jobs
+from app.routers import (auth, 
+                         health,
+                         collections, 
+                         ingestion, 
+                         jobs,
+                         search)
 
 
 log = get_logger(__name__)
@@ -130,6 +135,7 @@ def create_app() -> FastAPI:
     app.include_router(collections.router)
     app.include_router(ingestion.router)
     app.include_router(jobs.router)
+    app.include_router(search.router)
 
     # Phases 8-11 add:
     # collections, ingestion, search, jobs, synthesis, stream
