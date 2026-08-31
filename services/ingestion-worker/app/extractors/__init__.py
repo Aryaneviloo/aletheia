@@ -19,16 +19,16 @@ _pdf = PDFExtractor()
 
 #REgistry: mime types -> extrctor instance
 
-EXTRACTION_REGISTRY: dict[str, BaseExtractor] = {}
+EXTRACTOR_REGISTRY: dict[str, BaseExtractor] = {}
 
 for extractor in [_plain, _html, _pdf]:
     for mime_type in extractor.supported_mime_types:
-        EXTRACTION_REGISTRY[mime_type] = extractor
+        EXTRACTOR_REGISTRY[mime_type] = extractor
 
 
-def get_extractor(mime_types: str) -> BaseExtractor:
+def get_extractor(mime_type: str) -> BaseExtractor:
     """
     Returns the extractor for a given MIME type
     Falls back to Plain Text for unknown types
     """
-    return EXTRACTION_REGISTRY.get(mime_type, _plain)
+    return EXTRACTOR_REGISTRY.get(mime_type, _plain)
