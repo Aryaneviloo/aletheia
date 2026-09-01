@@ -38,7 +38,8 @@ from app.routers import (auth,
                          collections, 
                          ingestion, 
                          jobs,
-                         search)
+                         search,
+                         synthesis)
 
 
 log = get_logger(__name__)
@@ -136,7 +137,7 @@ def create_app() -> FastAPI:
     app.include_router(ingestion.router)
     app.include_router(jobs.router)
     app.include_router(search.router)
-
+    app.include_router(synthesis.router)
     # Phases 8-11 add:
     # collections, ingestion, search, jobs, synthesis, stream
 

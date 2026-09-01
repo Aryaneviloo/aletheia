@@ -93,6 +93,7 @@ async def health() -> HealthResponse:
     groq_ok = settings.llm_provider == "groq" and bool(settings.groq_api_key)
 
     overall = "ok" if (embedder_ok and reranker_ok) else "degraded"
+    return HealthResponse(status=overall, embedder=embedder_ok, reranker=reranker_ok, ollama=ollama_ok, groq=groq_ok)
 
 @app.post("/embed", response_model = EmbedResponse)
 async def embed(payload: EmbedRequest) -> EmbedResponse:
