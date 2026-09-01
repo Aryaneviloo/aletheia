@@ -34,6 +34,6 @@ class JobRead(BaseModel):
 
 class JobList(BaseModel):
     """Pagitated list of jobs kinda same as COllectionslist"""
-    item: list[JobRead]
+    items: list[JobRead]
     total: int
 

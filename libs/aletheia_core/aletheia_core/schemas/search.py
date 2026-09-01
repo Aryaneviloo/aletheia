@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 class SearchRequest(BaseModel):
     """Request body for a retreival search"""
     query: str = Field(min_length=1, max_length=2000)
-    collections_ids: list[uuid.UUID] = Field(
+    collection_ids: list[uuid.UUID] = Field(
         min_length=1,
         description="Search within these specific collections only"
                     "Must belong to the authenticated user - the router"
