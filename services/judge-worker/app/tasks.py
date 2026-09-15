@@ -21,7 +21,7 @@ from aletheia_core.config import get_settings
 from aletheia_core.db.base import session_scope
 from aletheia_core.db.models import Job
 from aletheia_core.queue.celery_app import Queues, celery_app
-from app.scoring import FAITHFULNESS_THRESHOLD, JudgeScore, parse_judge_response
+from app.scoring import FAITHFULNESS_SCORE, JudgeScore, parse_judge_response
 
 
 JUDGE_PROMPT = """You are a faithfulness evaluator. Check whether the answer
@@ -119,8 +119,6 @@ def evaluate_answer(
                     "user_id": _get_user_id_for_job(job_id),
                     "query": query,
                     "collection_ids": [],   # strategist will use all user collections
-                    "previous_answer": answer,
-                    "correction_issues": score.issues,
                 },
                 queue=Queues.SYNTHESIS,   # explicit — fixes bug #3
             )
