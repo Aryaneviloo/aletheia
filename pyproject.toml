@@ -48,3 +48,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]   # errors, pyflakes, import-sort, py
 python_version = "3.12"
 strict = true
 ignore_missing_imports = true   
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
