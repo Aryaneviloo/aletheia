@@ -5,11 +5,11 @@
 
 from __future__ import annotations
 
-import sys
-import os
+import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../services/ingestion-worker"))
 
 from app.chunker import chunk_text
+from app.hashing import compute_content_hash
 
 
 def test_short_text_single_chunk():

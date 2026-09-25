@@ -1,3 +1,4 @@
+"""Integration tests for the auth flow."""
 
 from __future__ import annotations
 
@@ -61,26 +62,30 @@ def test_register_short_password(client):
 
 
 def test_collections_crud(client, auth_headers):
-
+    # Create
     r = client.post("/collections",
         json={"name": "Test Collection", "description": "A test"},
         headers=auth_headers)
     assert r.status_code == 201
     collection_id = r.json()["id"]
 
+    # List
     r = client.get("/collections", headers=auth_headers)
     assert r.status_code == 200
     assert r.json()["total"] == 1
 
+    # Get
     r = client.get(f"/collections/{collection_id}", headers=auth_headers)
     assert r.status_code == 200
     assert r.json()["name"] == "Test Collection"
 
+    # Update
     r = client.patch(f"/collections/{collection_id}",
         json={"name": "Updated Name"},
         headers=auth_headers)
     assert r.status_code == 200
     assert r.json()["name"] == "Updated Name"
 
+    # Delete
     r = client.delete(f"/collections/{collection_id}", headers=auth_headers)
     assert r.status_code == 204

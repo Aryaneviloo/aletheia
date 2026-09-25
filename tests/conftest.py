@@ -12,10 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from aletheia_core.db.base import Base, get_db
-from aletheia_core.config import get_settings
-
-
-# --- Test database (SQLite in-memory for unit/integration tests) ----------
+from app.main import create_app  # works because pyproject.toml pythonpath includes services/api-gateway
 
 TEST_DATABASE_URL = "sqlite:///./test.db"
 
@@ -28,10 +25,6 @@ TestSessionLocal = sessionmaker(bind=test_engine, autoflush=False, autocommit=Fa
 
 @pytest.fixture(scope="function")
 def db():
-    """
-    Fresh database session per test function.
-    Creates all tables before the test, drops them after.
-    """
     Base.metadata.create_all(bind=test_engine)
     session = TestSessionLocal()
     try:
@@ -43,17 +36,6 @@ def db():
 
 @pytest.fixture(scope="function")
 def client(db):
-    """
-    FastAPI TestClient with the test DB injected via dependency override.
-    Overrides get_db() so routes use the test session.
-    """
-
-    import sys
-    import os
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../services/api-gateway"))
-
-    from app.main import create_app
-
     app = create_app()
 
     def override_get_db():
@@ -75,7 +57,6 @@ def test_user_payload():
 
 @pytest.fixture
 def registered_user(client, test_user_payload):
-    """Register a user and return the response."""
     response = client.post("/auth/register", json=test_user_payload)
     assert response.status_code == 201
     return response.json()
@@ -83,7 +64,6 @@ def registered_user(client, test_user_payload):
 
 @pytest.fixture
 def auth_headers(client, test_user_payload, registered_user):
-    """Return Authorization headers for an authenticated user."""
     response = client.post("/auth/login", json=test_user_payload)
     assert response.status_code == 200
     token = response.json()["access_token"]
