@@ -41,6 +41,7 @@ from app.routers import (auth,
                          search,
                          synthesis,
                          stream,
+                         constellations,
                          )
 
 
@@ -141,6 +142,7 @@ def create_app() -> FastAPI:
     app.include_router(search.router)
     app.include_router(synthesis.router)
     app.include_router(stream.router)
+    app.include_router(constellations.router)
     # Phases 8-11 add:
     # collections, ingestion, search, jobs, synthesis, stream
 
