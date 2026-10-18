@@ -1,4 +1,3 @@
-"""Integration tests for the auth flow."""
 
 from __future__ import annotations
 

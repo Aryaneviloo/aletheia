@@ -57,7 +57,7 @@ def register(payload: UserCreate, db: Session = Depends(get_db)) -> User:
     """
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing: 
-        raise ConcflictError(
+        raise ConflictError(
             message="An account eith this email already exists",
             error_code="email_already_registered",
         )
@@ -122,7 +122,7 @@ def refresh(payload: RefreshRequest, db: Session = Depends(get_db)) -> TokenPair
     if not stored or stored.revoked_at is not None:
         raise AuthenticationError(
             message="Refresh token is invalid or has been revoked",
-            error_code="refresh_token_invallid"
+            error_code="refresh_token_invalid"
         )
 
     if stored.expires_at < datetime.datetime.now(datetime.timezone.utc):
