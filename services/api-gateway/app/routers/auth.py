@@ -23,6 +23,7 @@ import datetime
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from aletheia_core.config import get_settings
 from aletheia_core.db.base import get_db
 from aletheia_core.db.models import RefreshToken, User
 from aletheia_core.exceptions import AuthenticationError, ConflictError
@@ -47,6 +48,21 @@ def hash_token(raw_token: str) -> str:
     SHA-256 is fast and sufficient for lookup process
     """
     return hashlib.sha256(raw_token.encode()).hexdigest()
+
+
+def _utcnow() -> datetime.datetime:
+    """Naive UTC. The refresh_tokens columns are timestamp without time zone."""
+    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+
+
+def _as_naive_utc(value: datetime.datetime) -> datetime.datetime:
+    if value.tzinfo is not None:
+        return value.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+    return value
+
+
+def _refresh_expiry() -> datetime.datetime:
+    return _utcnow() + datetime.timedelta(days=get_settings().refresh_token_expire_days)
 
 @router.post("/register", response_model=UserRead,
              status_code=status.HTTP_201_CREATED)
@@ -96,7 +112,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenPair:
     db.add(RefreshToken(
         user_id = user.id,
         token_hash = hash_token(refresh_token),
-        expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=14),
+        expires_at = _refresh_expiry(),
     ))
     db.commit()
 
@@ -125,13 +141,13 @@ def refresh(payload: RefreshRequest, db: Session = Depends(get_db)) -> TokenPair
             error_code="refresh_token_invalid"
         )
 
-    if stored.expires_at < datetime.datetime.now(datetime.timezone.utc):
+    if _as_naive_utc(stored.expires_at) < _utcnow():
         raise AuthenticationError(
             message="Refresh token has expired",
             error_code="refresh_token_expired",
         )
 
-    stored.revoked_at = datetime.datetime.now(datetime.timezone.utc)
+    stored.revoked_at = _utcnow()
 
     user_id = token_payload["sub"]
     new_access = create_access_token(user_id=user_id)
@@ -141,8 +157,7 @@ def refresh(payload: RefreshRequest, db: Session = Depends(get_db)) -> TokenPair
     db.add(RefreshToken(
         user_id=stored.user_id,
         token_hash=hash_token(new_refresh),
-        expires_at=datetime.datetime.now(datetime.timezone.utc)
-                   + datetime.timedelta(days=14),
+        expires_at=_refresh_expiry(),
     ))
     db.commit()
 
@@ -166,7 +181,7 @@ def logout(
     ).first()
 
     if stored and stored.revoked_at is None:
-        stored.revoked_at = datetime.datetime.now(datetime.timezone.utc)
+        stored.revoked_at = _utcnow()
         db.commit()
 
 

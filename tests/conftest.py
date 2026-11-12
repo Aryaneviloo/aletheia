@@ -6,19 +6,30 @@ Shared pytest fixtures for the entire test suite.
 
 from __future__ import annotations
 
+import os
+
+# Imported modules build the DB engine at import time. Tests never connect
+# to it; they use the sqlite engine below. Set a valid URL so a fresh clone
+# can run pytest before copying .env.
+os.environ.setdefault(
+    "DATABASE_URL",
+    "postgresql+psycopg://aletheia:changeme@localhost:5433/aletheia",
+)
+os.environ.setdefault("JWT_SECRET_KEY", "dev-only-insecure-secret-change-me")
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from aletheia_core.db.base import Base, get_db
 from app.main import create_app  # works because pyproject.toml pythonpath includes services/api-gateway
 
-TEST_DATABASE_URL = "sqlite:///./test.db"
-
 test_engine = create_engine(
-    TEST_DATABASE_URL,
+    "sqlite://",
     connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 TestSessionLocal = sessionmaker(bind=test_engine, autoflush=False, autocommit=False)
 

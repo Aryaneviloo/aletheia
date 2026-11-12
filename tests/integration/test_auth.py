@@ -47,6 +47,23 @@ def test_me_authenticated(client, auth_headers):
     assert "hashed_password" not in r.json()
 
 
+def test_refresh_rotates_token(client, registered_user, test_user_payload):
+    login = client.post("/auth/login", json=test_user_payload)
+    assert login.status_code == 200
+    refresh_token = login.json()["refresh_token"]
+
+    refreshed = client.post("/auth/refresh", json={"refresh_token": refresh_token})
+    assert refreshed.status_code == 200
+    body = refreshed.json()
+    assert body["access_token"]
+    assert body["refresh_token"]
+    assert body["refresh_token"] != refresh_token
+
+    reused = client.post("/auth/refresh", json={"refresh_token": refresh_token})
+    assert reused.status_code == 401
+    assert reused.json()["error_code"] == "refresh_token_invalid"
+
+
 def test_me_unauthenticated(client):
     r = client.get("/auth/me")
     assert r.status_code == 401

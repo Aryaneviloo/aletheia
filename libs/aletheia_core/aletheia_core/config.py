@@ -22,7 +22,7 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, RedisDsn, field_validator
+from pydantic import Field, PostgresDsn, RedisDsn, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
@@ -100,6 +100,20 @@ class Settings(BaseSettings):
     groq_api_key: str | None = Field(default=None)
     groq_model: str = Field(default="llama-3.1-8b-instant")
 
+
+    @field_validator("qdrant_api_key", "groq_api_key", mode="before")
+    @classmethod
+    def _blank_optional(cls, value: object) -> object:
+        """An empty value in .env means unset, not a key of zero characters."""
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @model_validator(mode="after")
+    def _overlap_fits_in_chunk(self) -> "Settings":
+        if self.chunk_overlap_tokens >= self.chunk_size_tokens:
+            raise ValueError("CHUNK_OVERLAP_TOKENS must be smaller than CHUNK_SIZE_TOKENS")
+        return self
 
     @field_validator("jwt_secret_key")
     @classmethod

@@ -1,0 +1,11 @@
+# Optional NVIDIA override. Leave this file unused on CPU-only machines.
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d ollama
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

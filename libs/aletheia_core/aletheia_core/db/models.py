@@ -10,7 +10,7 @@ import datetime
 import enum
 import uuid
 
-from sqlalchemy import ForeignKey, Text, UniqueConstraint, func 
+from sqlalchemy import JSON, ForeignKey, Text, UniqueConstraint, func 
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from aletheia_core.db.base import Base
@@ -215,7 +215,10 @@ class Job(Base):
     job_type: Mapped[JobType] = mapped_column(nullable=False)
     status: Mapped[JobStatus] = mapped_column(default=JobStatus.PENDING, nullable=False)
     celery_task_id: Mapped[str | None] = mapped_column(index=True, default=None)
-    result: Mapped[dict | None] = mapped_column(JSONB, default=None)
+    result: Mapped[dict | None] = mapped_column(
+        JSON().with_variant(JSONB(), "postgresql"),
+        default=None,
+    )
     error_message: Mapped[str | None] = mapped_column(Text, default=None)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime.datetime] = mapped_column(

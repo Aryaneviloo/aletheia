@@ -27,7 +27,7 @@ class PDFExtractor(BaseExtractor):
                 pages.append(text.strip())
 
 
-        return "\n\n------PAGE BREAK-------\n\n".join(pages)
+        return "\n\n---PAGE BREAK---\n\n".join(pages)
 
     @property
     def supported_mime_types(self) -> list[str]:

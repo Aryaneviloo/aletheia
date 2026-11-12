@@ -117,32 +117,23 @@ async def search(
     chunks = db.query(Chunk).filter(Chunk.id.in_(chunk_ids)).all()
     chunk_map = {c.id: c for c in chunks}
 
-    # Step 4: rerank using chunk content
-    candidate_texts = [
-        chunk_map[r.chunk_id].content
-        for r in raw_results
-        if r.chunk_id in chunk_map
-    ]
+    # Drop hits whose chunk row is gone so rerank scores stay aligned.
+    paired = [(hit, chunk_map[hit.chunk_id]) for hit in raw_results if hit.chunk_id in chunk_map]
 
-    if not candidate_texts:
+    if not paired:
         return SearchResponse(query=payload.query, results=[], total_found=0)
 
-    rerank_scores = await _rerank_results(payload.query, candidate_texts)
+    rerank_scores = await _rerank_results(payload.query, [chunk.content for _, chunk in paired])
 
-    # Step 5: build results with both retrieval and rerank scores,
-    # sort by rerank score descending, return top `limit`
     results = []
-    for i, hit in enumerate(raw_results):
-        chunk = chunk_map.get(hit.chunk_id)
-        if not chunk:
-            continue
+    for (hit, chunk), rerank_score in zip(paired, rerank_scores, strict=True):
         results.append(ChunkResult(
             chunk_id=chunk.id,
             document_id=chunk.document_id,
             collection_id=chunk.collection_id,
             content=chunk.content,
             retrieval_score=hit.score,
-            rerank_score=rerank_scores[i] if i < len(rerank_scores) else None,
+            rerank_score=rerank_score,
         ))
 
     results.sort(key=lambda r: r.rerank_score or 0, reverse=True)

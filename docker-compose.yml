@@ -49,15 +49,8 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    # No GPU reservation by default — CPU works, just slower. If you have
-    # an NVIDIA GPU + the nvidia container toolkit installed
-    deploy:
-      resources:
-        reservations:
-           devices:
-             - driver: nvidia
-               count: 1
-               capabilities: [gpu]
+    # CPU by default so a clone starts on machines without the NVIDIA runtime.
+    # For a GPU: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d ollama
 
 volumes:
   postgres_data:

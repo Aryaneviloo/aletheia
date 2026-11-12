@@ -6,6 +6,7 @@ Request/Response shapes for the document ingestion API
 """
 
 from __future__ import annotations
+import datetime
 import uuid
 from typing import Literal
 
@@ -34,7 +35,7 @@ class DocumentRead(BaseModel):
     source_url: str | None
     status: DocumentStatus
     error_message: str | None
-    created_at: str   # ISO 8601 string — datetime serialized for JSON transport
+    created_at: datetime.datetime
 
     model_config = ConfigDict(from_attributes=True)
 

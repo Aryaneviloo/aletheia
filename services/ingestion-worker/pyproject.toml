@@ -18,6 +18,9 @@ dependencies = [
     "pypdf>=5.1.0",            # PDF extraction
 ]
 
+[tool.uv]
+package = false
+
 [tool.uv.sources]
 aletheia-core = { workspace = true }
 

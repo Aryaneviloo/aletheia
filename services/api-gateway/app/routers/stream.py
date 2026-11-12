@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 from aletheia_core.config import get_settings
 from aletheia_core.db.base import get_db
 from aletheia_core.db.models import Chunk, Dialogue, Message, MessageRole, User
-from aletheia_core.exceptions import InferenceError
+from aletheia_core.exceptions import InferenceError, NotFoundError
 from aletheia_core.logging import get_logger
 from aletheia_core.vector.client import get_vector_store
 from app.dependencies import get_current_user
@@ -121,6 +121,11 @@ CONTEXT:
     system_prompt = "You are Aletheia, a precise assistant. Answer only from the provided context."
     if payload.dialogue_id:
         dialogue = db.get(Dialogue, payload.dialogue_id)
+        if dialogue is None or dialogue.user_id != current_user.id:
+            raise NotFoundError(
+                message=f"Dialogue {payload.dialogue_id} not found.",
+                error_code="dialogue_not_found",
+            )
     else:
         dialogue = Dialogue(user_id=current_user.id)
         db.add(dialogue)

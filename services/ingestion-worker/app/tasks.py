@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 
 import httpx
 from celery import Task
+from celery.exceptions import Retry
 from celery.utils.log import get_task_logger
 
 from aletheia_core.config import get_settings
@@ -100,19 +101,19 @@ def process_document(
         # Content was passed directly from the gateway for text ingestion.
         # URL-based ingestion fetches the content here.
         if content:
-            raw_text = content
+            raw_content: str | bytes = content
             mime_type = "text/plain"
         elif source_url:
             log.info(f"Fetching content from {source_url}")
             response = httpx.get(source_url, timeout=30.0, follow_redirects=True)
             response.raise_for_status()
-            raw_text = response.text
+            raw_content = response.content
             mime_type = response.headers.get("content-type", "text/plain").split(";")[0]
         else:
             raise ValueError("No content or source_url provided")
 
         extractor = get_extractor(mime_type)
-        extracted_text = extractor.extract(raw_text)
+        extracted_text = extractor.extract(raw_content)
 
         if not extracted_text.strip():
             raise ValueError("Extraction produced empty content")
@@ -129,6 +130,12 @@ def process_document(
             embeddings = _embed_chunks([c.content for c in chunks])
         except httpx.HTTPError as e:
             log.warning(f"Embedding failed, retrying: {e}")
+            if self.request.retries >= (self.max_retries or 0):
+                raise
+            with session_scope() as db:
+                document = db.get(Document, doc_uuid)
+                if document:
+                    document.status = DocumentStatus.PENDING
             raise self.retry(exc=e)
 
         # --- Step 5: Write Chunk rows to Postgres ---
@@ -190,6 +197,8 @@ def process_document(
         log.info(f"Ingestion complete: {len(chunks)} chunks for document {document_id}")
         return result
 
+    except Retry:
+        raise
     except Exception as exc:
         log.error(f"Ingestion failed for document {document_id}: {exc}")
 

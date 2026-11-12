@@ -52,4 +52,6 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-pythonpath = ["services/api-gateway", "services/ingestion-worker"]
+# Gateway tests import `app`. Ingestion tests load that service in a
+# subprocess so the two `app` packages never share one process.
+pythonpath = ["services/api-gateway"]

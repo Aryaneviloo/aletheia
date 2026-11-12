@@ -24,6 +24,7 @@ from aletheia_core.db.base import get_db
 from aletheia_core.db.models import Document, DocumentStatus, Job, JobStatus, JobType, User
 from aletheia_core.exceptions import ConflictError, NotFoundError, ValidationError
 from aletheia_core.queue.celery_app import Queues, celery_app
+from aletheia_core.vector.client import get_vector_store
 from aletheia_core.schemas.ingestion import DocumentIngestRequest, DocumentRead, IngestResponse
 from app.dependencies import get_current_user
 from app.routers.collections import _get_owned_collection
@@ -72,11 +73,16 @@ def ingest_document(
         Document.collection_id == payload.collection_id,
         Document.content_hash == content_hash,
     ).first()
-    if existing:
+    if existing and existing.status != DocumentStatus.FAILED:
         raise ConflictError(
             message="This content has already been ingested into the collection.",
             error_code="document_already_exists",
         )
+    if existing is not None:
+        if existing.chunks:
+            get_vector_store().delete_by_document(existing.id)
+        db.delete(existing)
+        db.flush()
 
     #Create the document row immediately
     document = Document(

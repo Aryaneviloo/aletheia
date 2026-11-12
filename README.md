@@ -114,28 +114,40 @@ uv sync --all-packages --group dev
 docker compose up -d postgres redis qdrant ollama
 ```
 
-### 4. Pull a model
+This uses CPU for Ollama. Postgres is published on host port **5433**. Redis, Qdrant, and Ollama use 6379, 6333, and 11434. The `.env.example` defaults match those host ports.
+
+Machines with the NVIDIA container toolkit can attach a GPU to Ollama:
 
 ```bash
-docker exec aletheia-ollama ollama pull llama3.2:3b
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d ollama
 ```
 
-Update `OLLAMA_MODEL=llama3.2:3b` in `.env`.
+### 4. Pull the model named in `.env`
+
+```bash
+docker exec aletheia-ollama ollama pull llama3.2:1b
+```
+
+`OLLAMA_MODEL` in `.env` must be the tag you pulled. `llama3.2:3b` is a quality upgrade once `llama3.2:1b` already answers.
+
+The first inference-service boot also downloads `BAAI/bge-small-en-v1.5` and `cross-encoder/ms-marco-MiniLM-L-6-v2` from Hugging Face. That step needs network once.
 
 ### 5. Run migrations
 
 ```bash
-cd libs/aletheia_core && alembic upgrade head && cd ../..
+uv run --directory libs/aletheia_core alembic upgrade head
 ```
 
-### 6. Start services (6 terminals)
+### 6. Start services (5 terminals)
+
+Each service directory contains its own `app` package. `PYTHONPATH=.` selects that directory. Run these from the repo root.
 
 ```bash
-# Inference service
-cd services/inference-service && uv run uvicorn app.main:app --port 8100
+# Inference service — first start downloads the embedding and reranker models
+cd services/inference-service && PYTHONPATH=. uv run uvicorn app.main:app --port 8100
 
 # API gateway
-cd services/api-gateway && uv run uvicorn app.main:app --port 8000 --reload
+cd services/api-gateway && PYTHONPATH=. uv run uvicorn app.main:app --port 8000 --reload
 
 # Workers
 cd services/ingestion-worker && PYTHONPATH=. uv run celery -A app.celery_worker worker -Q ingestion -c 2 --loglevel=info

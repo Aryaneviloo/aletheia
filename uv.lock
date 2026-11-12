@@ -977,7 +977,7 @@ wheels = [
 [[package]]
 name = "inference-service"
 version = "0.1.0"
-source = { editable = "services/inference-service" }
+source = { virtual = "services/inference-service" }
 dependencies = [
     { name = "aletheia-core" },
     { name = "fastapi" },
@@ -1002,7 +1002,7 @@ requires-dist = [
 [[package]]
 name = "ingestion-worker"
 version = "0.1.0"
-source = { editable = "services/ingestion-worker" }
+source = { virtual = "services/ingestion-worker" }
 dependencies = [
     { name = "aletheia-core" },
     { name = "beautifulsoup4" },
@@ -1053,7 +1053,7 @@ wheels = [
 [[package]]
 name = "judge-worker"
 version = "0.1.0"
-source = { editable = "services/judge-worker" }
+source = { virtual = "services/judge-worker" }
 dependencies = [
     { name = "aletheia-core" },
     { name = "httpx" },
@@ -2340,7 +2340,7 @@ wheels = [
 [[package]]
 name = "synthesis-worker"
 version = "0.1.0"
-source = { editable = "services/synthesis-worker" }
+source = { virtual = "services/synthesis-worker" }
 dependencies = [
     { name = "aletheia-core" },
     { name = "httpx" },

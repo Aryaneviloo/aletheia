@@ -13,6 +13,9 @@ dependencies = [
     "groq>=0.13.0",
 ]
 
+[tool.uv]
+package = false
+
 [tool.uv.sources]
 aletheia-core = { workspace = true }
 

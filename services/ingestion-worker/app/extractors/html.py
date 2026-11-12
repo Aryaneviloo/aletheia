@@ -15,7 +15,7 @@ class HTMLExtractor(BaseExtractor):
         if isinstance(content, bytes):
             content = content.decode("utf-8", errors="replace")
 
-        soup = BeautifulSoup(content, "html-parser")
+        soup = BeautifulSoup(content, "html.parser")
 
         for tag in soup(["script", "style", "nav", "footer", "header"]):
             tag.decompose()
@@ -25,7 +25,7 @@ class HTMLExtractor(BaseExtractor):
         text = soup.get_text(separator="\n", strip = True)
 
         import re
-        text = re.sun(r'\n{3,}', '\n\n', text)
+        text = re.sub(r'\n{3,}', '\n\n', text)
         return text.strip()
 
     @property

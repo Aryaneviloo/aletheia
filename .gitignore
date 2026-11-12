@@ -18,6 +18,7 @@ env/
 !.env.example
 
 # Testing / linting / type-checking caches ---
+test.db
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

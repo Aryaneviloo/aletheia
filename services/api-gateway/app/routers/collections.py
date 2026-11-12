@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from aletheia_core.db.base import get_db
 from aletheia_core.db.models import Collection, User
 from aletheia_core.exceptions import ConflictError, NotFoundError
+from aletheia_core.vector.client import get_vector_store
 from aletheia_core.schemas.collections import (
     CollectionCreate,
     CollectionList,
@@ -91,7 +92,7 @@ def list_collection(
     return CollectionList(items = items, total = total)
 
 
-@router.get("{collection_id}", response_model=CollectionRead)
+@router.get("/{collection_id}", response_model=CollectionRead)
 def get_collection(
     collection_id: uuid.UUID,
     db: Session = Depends(get_db),
@@ -144,13 +145,16 @@ def delete_collection(
 ) -> None:
     """
     Delete a collection and everything inside it.
-    The cascade="all, delete-orphan" on Collection.documents in
-    db/models.py means Postgres handles deleting the documents, chunks,
-    etc. automatically — the gateway just deletes the collection row.
+    The ORM cascade on Collection.documents deletes the documents and chunks.
 
-    Note: this does NOT clean up Qdrant vectors for the deleted chunks.
+    Qdrant points for those documents are removed first. A vector-store
+    failure leaves the collection in Postgres so the delete can be retried.
     """
 
     collection = _get_owned_collection(collection_id, current_user, db)
+    document_ids = [document.id for document in collection.documents]
+    vector_store = get_vector_store()
+    for document_id in document_ids:
+        vector_store.delete_by_document(document_id)
     db.delete(collection)
     db.commit()
